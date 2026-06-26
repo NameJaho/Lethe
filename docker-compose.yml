@@ -1,0 +1,31 @@
+services:
+  lethe:
+    build: .
+    container_name: lethe
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "file:/app/data/lethe.db"
+      NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+      PASSWORD_HASH_ROUNDS: "12"
+      RATE_LIMIT_MAX_ATTEMPTS: "8"
+      RATE_LIMIT_WINDOW_SECONDS: "600"
+      PICKUP_CODE_LENGTH: "7"
+    volumes:
+      - lethe_data:/app/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  lethe_data:
