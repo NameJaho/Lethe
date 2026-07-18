@@ -1,7 +1,16 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
-import { Check, Clipboard, Clock3, Copy, Flame, KeyRound, Send } from "lucide-react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  Check,
+  Clipboard,
+  Clock3,
+  Copy,
+  Flame,
+  KeyRound,
+  RefreshCw,
+  Send
+} from "lucide-react";
 
 type CreateResult = {
   pickupCode: string | null;
@@ -9,6 +18,7 @@ type CreateResult = {
   requirePickupCode: boolean;
   expiresAt: string;
   burnAfterRead: boolean;
+  password: string;
 };
 
 const expiryOptions = [
@@ -17,6 +27,15 @@ const expiryOptions = [
   { value: "1d", label: "1 天" },
   { value: "7d", label: "7 天" }
 ];
+
+const passwordAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+function createRandomPassword(length = 14) {
+  const values = new Uint32Array(length);
+  crypto.getRandomValues(values);
+
+  return Array.from(values, (value) => passwordAlphabet[value % passwordAlphabet.length]).join("");
+}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -29,12 +48,16 @@ export function CreateForm() {
   const [content, setContent] = useState("");
   const [password, setPassword] = useState("");
   const [expiresIn, setExpiresIn] = useState("1d");
-  const [requirePickupCode, setRequirePickupCode] = useState(true);
-  const [burnAfterRead, setBurnAfterRead] = useState(false);
+  const [requirePickupCode, setRequirePickupCode] = useState(false);
+  const [burnAfterRead, setBurnAfterRead] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<CreateResult | null>(null);
-  const [copied, setCopied] = useState<"code" | "link" | null>(null);
+  const [copied, setCopied] = useState<"code" | "link" | "password" | null>(null);
+
+  useEffect(() => {
+    setPassword(createRandomPassword());
+  }, []);
 
   const pickupLink = useMemo(() => {
     if (!result || typeof window === "undefined") {
@@ -50,6 +73,7 @@ export function CreateForm() {
     setError("");
     setResult(null);
     setCopied(null);
+    const submittedPassword = password;
 
     const response = await fetch("/api/messages", {
       method: "POST",
@@ -73,12 +97,15 @@ export function CreateForm() {
       return;
     }
 
-    setResult(data);
+    setResult({
+      ...data,
+      password: submittedPassword
+    });
     setContent("");
-    setPassword("");
+    setPassword(createRandomPassword());
   }
 
-  async function copyText(kind: "code" | "link", value: string) {
+  async function copyText(kind: "code" | "link" | "password", value: string) {
     await navigator.clipboard.writeText(value);
     setCopied(kind);
     window.setTimeout(() => setCopied(null), 1600);
@@ -112,16 +139,24 @@ export function CreateForm() {
             <input
               id="password"
               name="password"
-              type="password"
+              type="text"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               minLength={4}
               maxLength={128}
-              autoComplete="new-password"
-              placeholder="至少 4 位"
+              autoComplete="off"
+              placeholder="自动生成，可手动修改"
               required
             />
           </div>
+          <button
+            type="button"
+            className="secondary-button inline-button"
+            onClick={() => setPassword(createRandomPassword())}
+          >
+            <RefreshCw size={17} aria-hidden="true" />
+            重新生成
+          </button>
         </div>
 
         <div className="field-stack">
@@ -188,11 +223,25 @@ export function CreateForm() {
 
       {result ? (
         <section className="result-box" aria-live="polite">
-          <div>
-            <p className="result-label">{result.requirePickupCode ? "取件码" : "读取方式"}</p>
-            <strong>{result.requirePickupCode ? result.pickupCode : "仅密码"}</strong>
+          <div className="result-grid">
+            <div>
+              <p className="result-label">密码</p>
+              <strong>{result.password}</strong>
+            </div>
+            <div>
+              <p className="result-label">{result.requirePickupCode ? "取件码" : "读取方式"}</p>
+              <strong>{result.requirePickupCode ? result.pickupCode : "仅密码"}</strong>
+            </div>
           </div>
           <div className="result-actions">
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => copyText("password", result.password)}
+            >
+              {copied === "password" ? <Check size={17} /> : <Copy size={17} />}
+              {copied === "password" ? "已复制" : "复制密码"}
+            </button>
             {result.pickupCode ? (
               <button
                 type="button"

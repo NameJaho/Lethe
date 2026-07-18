@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
   const content = typeof body.content === "string" ? body.content : "";
   const password = typeof body.password === "string" ? body.password : "";
   const expiry = parseExpiry(body.expiresIn);
-  const burnAfterRead = body.burnAfterRead === true;
-  const requirePickupCode = body.requirePickupCode !== false;
+  const burnAfterRead = body.burnAfterRead !== false;
+  const requirePickupCode = body.requirePickupCode === true;
 
   if (content.trim().length === 0) {
     return NextResponse.json({ error: "请输入需要保存的内容。" }, { status: 400 });

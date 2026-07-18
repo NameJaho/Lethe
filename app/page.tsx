@@ -27,7 +27,7 @@ export default function Home() {
             <p className="eyebrow">临时文本交换</p>
             <h1>创建一条用密码领取的内容</h1>
             <p>
-              保存加密文本，可选择是否生成取件码。接收者按你设置的方式读取。
+              默认生成明文密码、阅后即焚且不需要取件码；需要更强区分时可开启取件码。
             </p>
           </div>
           <CreateForm />

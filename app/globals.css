@@ -395,6 +395,11 @@ input:focus {
   padding: 0 14px;
 }
 
+.inline-button {
+  width: fit-content;
+  min-height: 40px;
+}
+
 .secondary-button:hover {
   border-color: #b9c2b5;
   background: #f8faf7;
@@ -442,8 +447,15 @@ input:focus {
   display: block;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     monospace;
-  font-size: clamp(32px, 7vw, 46px);
+  font-size: clamp(24px, 5vw, 38px);
   letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.7fr);
+  gap: 18px;
 }
 
 .result-actions,
@@ -558,9 +570,15 @@ input:focus {
   }
 
   .result-actions,
-  .content-toolbar {
+  .content-toolbar,
+  .result-grid {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .secondary-button {
