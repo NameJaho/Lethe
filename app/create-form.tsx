@@ -28,9 +28,9 @@ const expiryOptions = [
   { value: "7d", label: "7 天" }
 ];
 
-const passwordAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const passwordAlphabet = "0123456789";
 
-function createRandomPassword(length = 14) {
+function createRandomPassword(length = 4) {
   const values = new Uint32Array(length);
   crypto.getRandomValues(values);
 
@@ -144,8 +144,10 @@ export function CreateForm() {
               onChange={(event) => setPassword(event.target.value)}
               minLength={4}
               maxLength={128}
+              inputMode="numeric"
+              pattern="[0-9]*"
               autoComplete="off"
-              placeholder="自动生成，可手动修改"
+              placeholder="自动生成 4 位数字，可手动修改"
               required
             />
           </div>
